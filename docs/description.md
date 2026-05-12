@@ -6,60 +6,80 @@ The goal of the project is to simulate a real machine learning consulting projec
 
 ### Client
 
-Amkor Technology is one of the world's largest providers of semiconductor packaging and test services. The contact person for this project is a Volume Planner within the company's supply chain planning department.
+The client for this project is Grupo Brisa, one of the largest higway operators in Portugal, responsible for managing motorway infrastructure, traffic monitoring, and emergency response coordination.
 
 ### Context
 
-The volume planner department is responsible for forecasting and managing the quantity of materials and production capacity required to fulfill client orders. Volume planners work closely with two other departments:
+Highway operators such as Grupo Brisa must continuously monitor traffic and weather conditions to ensure road safety and efficient emergency response management.
+Weather conditions can significantly influence accident occurence on highways. Heayy rain, low visibility, strong winds, and other adverse meteorological conditions increase the probability of road incidents and directly impact operational planning.
 
-- **Material Planners** - Responsible for procuring and managing raw materials and components.
-- **Capacity Planners** - Responsible for ensuring that production capacity is available to meet demand.
-
-Clients served by the volume planning team fall into two categories:
-
-- **High-volume clients** - Large accounts with significant and relatively predictable demand.
-- **Low-volume clients** - Smaller accounts with more variable and harder-to-predict demand.
-
-Additionally, clients follow one of two planning approaches:
-
-- **Weekly budget planning** - Clients submit a demand forecast on a weekly basis, allowing for more frequent adjustments.
-- **Annual budget planning** - Clients submit a single yearly forecast upfront, which remains largely fixed throughout the year.
+The objective is to combine meteorological information with historical road accident records to identify patterns that help anticipate critical situations and support faster, more efficient responses from highway operators.
 
 ### Problem Statement
 
-A recurring challenge in volume planning is the **gap between a client's planned volume and their actual volume consuption.**
-Clients frequently deviate from their submitted forecasts (ordering more or less than planned), which create problems across the supply chain:
+Grupo Brisa must efficiently allocate emergency response vehicles accros the motorway network to guarantee rapid intervention during road accidents.
 
-- Stock shortages
-- Excess inventory
+Each accident requires the deployent of three emergency vehicles. As a result, accurately forecasting the expected number of daily accidents is essential for operational planning, vehicle allocation, and emergency readiness.
+
+The system should help highway operators:
+
+- Anticipate periods of elevated accident risk
+- Improve emergency vehicle allocation
+- Reduce response times during critical situations
+- Optimize operational resource management
 
 ### Proposed ML Solution
 
-The goal is to develop a **predictive model** that estimates the expected deviation between a client's planned volume and their actual volume consumption for a given material and time period.
+The goal is to develop a machine learning model capable of forecasting the daily number of road accidents on Portuguese highways.
 
-Given features such as client type, planning method, current stock, material characteristics, and available production capacity, the model will classify each client-material-period combination into one of three risk categories: **under_budget**, **on_track**, or **over_budget**.
+The dataset contains 10,000 generated rows designed to simulate realistic motorway conditions.
+The model combines:
 
-This classification gives volume planners an immediate, actionable risk signal, allowing them to adjust orders, flag high-risk clients, and coordinate earlier with material and capacity planners, improving overall supply chain stability.
+- Temporal features
+- Meteorological conditions
+- Infrastructure-related variables
+- Traffic density patterns
 
 ### Target Variable
 
-`deviation_class` - A 3-class label indicating whether the client's actual consumption will fall **below**, or **above** their planned budget for a given period.
+`accident_count` - Numerical target representing the number of accidents expected under a specific set of road, traffic, weather, and infrastructure conditions.
 
-| Class          | Meaning                           | Business Impact                            |
-| -------------- | --------------------------------- | ------------------------------------------ |
-| `under_budget` | Client consumes less than planned | Excess stock, wasted capacity reservation  |
-| `on_track`     | Client consumes close to planned  | No action needed                           |
-| `over_budget`  | Client consumes more than planned | Stock shortage risk, urgent reorder needed |
+| Variable         | Meaning                                                 |
+| ---------------- | ------------------------------------------------------- |
+| `accident_count` | Expected number of accidents for the simulated scenario |
 
 ### Features
 
-| Feature              | Type        | Description                                     |
-| -------------------- | ----------- | ----------------------------------------------- |
-| `client_type`        | Categorical | High-volume or small-volume client              |
-| `planning_type`      | Categorical | Weekly or annual budget planning                |
-| `material`           | Categorical | Type of material being planned                  |
-| `planned_volume`     | Numerical   | Volume commited by the client for the period    |
-| `stock_level`        | Numerical   | Current available stock for the material        |
-| `week_of_year`       | Numerical   | Week number, capturing seasonal demand patterns |
-| `buy_price`          | Numerical   | Unit purchase cost of the material              |
-| `capacity_available` | Numerical   | Production capacity available for the period    |
+The final dataset contains 12 input feature grouped into four categories:
+
+**Temporal Features**
+
+| Feature   | Type      | Description                                   |
+| --------- | --------- | --------------------------------------------- |
+| `hour`    | Numerical | Hour of the day                               |
+| `weekday` | Numerical | Day of the week                               |
+| `month`   | Numerical | Month of the year                             |
+| `holiday` | Binary    | Indicates whether the day is a public holiday |
+
+**Meteorological Conditions**
+
+| Feature            | Type      | Description                        |
+| ------------------ | --------- | ---------------------------------- |
+| `precipitation_mm` | Numerical | Total precipitation in millimeters |
+| `visibility_km`    | Numerical | Visibility in kilometers           |
+| `temperature_c`    | Numerical | Temperature in degrees Celsius     |
+| `wind_speed_kmh`   | Numerical | Wind speed in kilometers per hour  |
+
+**Traffic Features**
+
+| Feature           | Type      | Description                    |
+| ----------------- | --------- | ------------------------------ |
+| `traffic_density` | Numerical | Traffic density in the highway |
+
+**Infrastructure Features**
+
+| Feature       | Type      | Description                                         |
+| ------------- | --------- | --------------------------------------------------- |
+| `num_lanes`   | Numerical | Number of motorway lanes                            |
+| `ilumination` | Binary    | Indicates whether the road section has ilumnination |
+| `work_zone `  | Binary    | Indicates active road works                         |
