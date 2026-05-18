@@ -11,21 +11,21 @@ st.set_page_config(
    layout="wide",
 )
 
-MODEL_PATH = Path(__file__).parent / "model.pkl"
+MODEL_MAP = {
+   "RandomForestRegressor": "models/model.pkl",
+}
 
-@st.cache_resource(show_spinner="Loading model...")
-def load_model():
-   if MODEL_PATH.exists():
-      return joblib.load(MODEL_PATH)
-   
-   from train import train_and_save
-   return train_and_save()
-
-model = load_model()
+def load_model(path):
+   if Path(path).exists():
+      return joblib.load(path)
 
 # Input widgets
 
 st.title("Highway Accident Predictor 🚗")
+
+model_index = st.selectbox("Select model", ["RandomForestRegressor"], index=0)
+
+model = load_model(MODEL_MAP[model_index])
 
 hour = st.slider("Hour of the day", 0, 23, 8)
 weekday = st.slider("Day of the week (0=Mon, 6=Sun)", 0, 6, 0)
@@ -44,7 +44,6 @@ ilumination = st.selectbox("Road has ilumination", [0, 1])
 work_zone = st.selectbox("Work zone present", [0, 1])
 
 # Predict and show result
-
 if st.button("Predict"):
    input_data = pd.DataFrame([{
       "hour": hour,
