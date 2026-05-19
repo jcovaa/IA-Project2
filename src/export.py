@@ -9,9 +9,11 @@ from pathlib import Path
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+
 
 DATA_PATH = Path(__file__).parent / "data" / "highway_accidents.csv"
-MODEL_PATH = Path(__file__).parent / "model.pkl"
 
 FEATURES = [
    "hour", "weekday", "month", "holiday",
@@ -21,7 +23,7 @@ FEATURES = [
 ]
 TARGET = "num_accidents"
 
-def train_and_save():
+def train_and_test():
    print("Loading data...")
    df = pd.read_csv(DATA_PATH)
 
@@ -46,9 +48,30 @@ def train_and_save():
    print(f"  RMSE : {rmse:.3f}")
    print(f"  R^2  : {r2:.3f}")
 
-   joblib.dump(model, MODEL_PATH)
-   print(f"\nModel saved to {MODEL_PATH}")
    return model
 
+MODEL_MAP = {
+   "RandomForestRegressor": RandomForestRegressor(random_state=42, max_depth= 20, max_features='sqrt', min_samples_leaf=5, min_samples_split=20, n_estimators =200),
+   "XGBoost": XGBRegressor(random_state=42, colsample_bytree=0.8, learning_rate=0.05, max_depth=3, min_child_weight=2, n_estimators=200,reg_alpha=0.1, reg_lambda=5.0, subsample=0.8),
+   "LigthGBM": LGBMRegressor(random_state=42, colsample_bytree=0.8, learning_rate=0.1, max_depth=5, min_child_samples=50, n_estimators=100, num_leaves=31, reg_alpha=1.0, reg_lambda=5.0, subsample=0.8),
+}
+
+def train_and_export_models():
+   print("Loading data...")
+   df = pd.read_csv(DATA_PATH)
+
+   x = df[FEATURES]
+   y = df[TARGET]
+
+   for name, model in MODEL_MAP.items():
+      print(f"Training {name}...")
+      model.fit(x, y)
+      filename = f"{name}.pkl"
+      joblib.dump(model, filename)
+      print(f"Saved {filename}")
+
+   print("All models exported.")
+
+
 if __name__ == "__main__":
-   train_and_save()
+   train_and_test()
