@@ -15,7 +15,9 @@ st.set_page_config(
 )
 
 MODEL_MAP = {
-   "RandomForestRegressor": "models/model.pkl",
+   "RandomForestRegressor": "models/randomforestregressor.pkl",
+   "XGBoost": "models/xgboost.pkl",
+   "LightGBM": "models/lightgbm.pkl",
    "Upload custom model": None,
 }
 
