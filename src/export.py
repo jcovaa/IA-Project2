@@ -53,7 +53,7 @@ def train_and_test():
 MODEL_MAP = {
    "RandomForestRegressor": RandomForestRegressor(random_state=42, max_depth= 20, max_features='sqrt', min_samples_leaf=5, min_samples_split=20, n_estimators =200),
    "XGBoost": XGBRegressor(random_state=42, colsample_bytree=0.8, learning_rate=0.05, max_depth=3, min_child_weight=2, n_estimators=200,reg_alpha=0.1, reg_lambda=5.0, subsample=0.8),
-   "LigthGBM": LGBMRegressor(random_state=42, colsample_bytree=0.8, learning_rate=0.1, max_depth=5, min_child_samples=50, n_estimators=100, num_leaves=31, reg_alpha=1.0, reg_lambda=5.0, subsample=0.8),
+   "LightGBM": LGBMRegressor(random_state=42, colsample_bytree=0.8, learning_rate=0.1, max_depth=5, min_child_samples=50, n_estimators=100, num_leaves=31, reg_alpha=1.0, reg_lambda=5.0, subsample=0.8),
 }
 
 def train_and_export_models():
@@ -63,10 +63,12 @@ def train_and_export_models():
    x = df[FEATURES]
    y = df[TARGET]
 
+   model_dir = Path(__file__).parent / "models"
+
    for name, model in MODEL_MAP.items():
       print(f"Training {name}...")
       model.fit(x, y)
-      filename = f"{name}.pkl"
+      filename = model_dir / f"{name}.pkl"
       joblib.dump(model, filename)
       print(f"Saved {filename}")
 
@@ -74,4 +76,4 @@ def train_and_export_models():
 
 
 if __name__ == "__main__":
-   train_and_test()
+   train_and_export_models()
