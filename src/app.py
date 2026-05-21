@@ -6,7 +6,11 @@ import io
 import os
 from pathlib import Path
 
-full_df = pd.read_csv(Path(__file__).parent / "data" / "highway_accidents.csv")
+BASE_DIR = Path(__file__).parent
+DATA_PATH = BASE_DIR / "data" / "highway_accidents.csv"
+MODEL_DIR = BASE_DIR / "models"
+
+full_df = pd.read_csv(DATA_PATH)
 
 st.set_page_config(
    page_title="Highway Accident Predictor",
@@ -15,14 +19,15 @@ st.set_page_config(
 )
 
 MODEL_MAP = {
-   "RandomForestRegressor": "models/RandomForestRegressor.pkl",
-   "XGBoost": "models/XGBoost.pkl",
-   "LightGBM": "models/LightGBM.pkl",
+   "RandomForestRegressor": MODEL_DIR / "RandomForestRegressor.pkl",
+   "XGBoost": MODEL_DIR / "XGBoost.pkl",
+   "LightGBM": MODEL_DIR / "LightGBM.pkl",
+   "Compare all models": None,
    "Upload custom model": None,
 }
 
 def load_model(path):
-   if Path(path).exists():
+   if path is not None and Path(path).exists():
       return joblib.load(path)
 
 # Input widgets
@@ -34,6 +39,7 @@ st.subheader("Predict number of accidents and vehicles needed")
 model_index = st.selectbox("Select model", list(MODEL_MAP.keys()), index=0)
 
 model = None
+compare_models = None
 if model_index == "Upload custom model":
    uploaded_model = st.file_uploader("Upload model (.pkl)", type=["pkl"])
    if uploaded_model is not None:
@@ -42,6 +48,15 @@ if model_index == "Upload custom model":
          st.success("Custom model loaded.")
       except Exception as exc:
          st.error(f"Failed to load model: {exc}")
+elif model_index == "Compare all models":
+   compare_models = {
+      name: load_model(path)
+      for name, path in MODEL_MAP.items()
+      if path is not None
+   }
+   missing_models = [name for name, loaded_model in compare_models.items() if loaded_model is None]
+   if missing_models:
+      st.error(f"Could not load: {', '.join(missing_models)}")
 else:
    model = load_model(MODEL_MAP[model_index])
 
@@ -68,28 +83,58 @@ work_zone = binary_map[work_zone]
 
 # Predict and show result
 if st.button("Predict", type="primary", width='stretch'):
-   if model is None:
+   input_data = pd.DataFrame([{
+      "hour": hour,
+      "weekday": weekday,
+      "month": month,
+      "holiday": holiday,
+      "precipitation_mm": precipitation_mm,
+      "visibility_km": visibility_km,
+      "temperature_c": temperature_c,
+      "wind_speed_kmh": wind_speed_kmh,
+      "traffic_density": traffic_density,
+      "num_lanes": num_lanes,
+      "ilumination": ilumination,
+      "work_zone": work_zone,
+   }])
+
+   if compare_models is not None:
+      if any(loaded_model is None for loaded_model in compare_models.values()):
+         st.warning("Please load all models before comparing.")
+      else:
+         comparison_rows = []
+         for name, loaded_model in compare_models.items():
+            prediction = loaded_model.predict(input_data)[0]
+            accidents = max(0, round(float(prediction)))
+            vehicles = accidents * 3
+            comparison_rows.append({
+               "Model": name,
+               "Predicted Accidents": accidents,
+               "Estimated Vehicles Needed": vehicles,
+            })
+
+         comparison_df = pd.DataFrame(comparison_rows)
+         averages = {
+            "Model": "Average",
+            "Predicted Accidents": round(comparison_df["Predicted Accidents"].mean(), 2),
+            "Estimated Vehicles Needed": round(comparison_df["Estimated Vehicles Needed"].mean(), 2),
+         }
+
+         st.subheader("Model Comparison")
+         st.dataframe(pd.concat([comparison_df, pd.DataFrame([averages])], ignore_index=True), width='stretch')
+
+         st.subheader("Average Result")
+         col1, col2 = st.columns(2)
+         with col1:
+            st.metric("Average Predicted Accidents", averages["Predicted Accidents"])
+         with col2:
+            st.metric("Average Estimated Vehicles Needed", averages["Estimated Vehicles Needed"])
+   elif model is None:
       st.warning("Please load a model before predicting.")
    else:
-      input_data = pd.DataFrame([{
-         "hour": hour,
-         "weekday": weekday,
-         "month": month,
-         "holiday": holiday,
-         "precipitation_mm": precipitation_mm,
-         "visibility_km": visibility_km,
-         "temperature_c": temperature_c,
-         "wind_speed_kmh": wind_speed_kmh,
-         "traffic_density": traffic_density,
-         "num_lanes": num_lanes,
-         "ilumination": ilumination,
-         "work_zone": work_zone,
-      }])
-
       prediction = model.predict(input_data)[0]
       accidents = max(0, round(prediction))
       vehicles = accidents * 3
-
 
       st.subheader("Prediction Results")
       col1, col2 = st.columns(2)
