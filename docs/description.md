@@ -10,10 +10,11 @@ The client for this project is Grupo Brisa, one of the largest higway operators 
 
 ### Context
 
-Highway operators such as Grupo Brisa must continuously monitor traffic and weather conditions to ensure road safety and efficient emergency response management.
-Weather conditions can significantly influence accident occurence on highways. Heayy rain, low visibility, strong winds, and other adverse meteorological conditions increase the probability of road incidents and directly impact operational planning.
+Highway operators such as Grupo Brisa must continuously monitor traffic, environmental, and infrastructural conditions to ensure road safety and efficient emergency response management.
 
-The objective is to combine meteorological information with historical road accident records to identify patterns that help anticipate critical situations and support faster, more efficient responses from highway operators.
+Multiple factors influence accident occurrence on highways. Adverse weather conditions (such as heavy rain, low visibility, and strong winds), combined with traffic patterns, temporal context, and road infrastructure characteristics, all contribute to the likelihood of road incidents and directly impact operational planning.
+
+The objective is to combine meteorological, traffic, temporal, and infrastructure data with historical road accident records to identify patterns that help anticipate critical situations and support faster, more efficient responses from highway operators.
 
 ### Problem Statement
 
