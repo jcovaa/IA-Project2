@@ -24,6 +24,6 @@ streamlit run app.py
 
 ### Authors
 
-- André Cotrim 202305592
-- Diniz Noronha 202306120
-- João Cova 202307756
+- André Cotrim
+- Diniz Noronha
+- João Cova
